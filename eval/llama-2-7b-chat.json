@@ -1,0 +1,32 @@
+{
+  "results": {
+    "hendrycksTest-high_school_chemistry": {
+      "acc": 0.3054187192118227,
+      "acc_stderr": 0.03240661565868408,
+      "acc_norm": 0.3054187192118227,
+      "acc_norm_stderr": 0.03240661565868408
+    },
+    "hendrycksTest-high_school_computer_science": {
+      "acc": 0.38,
+      "acc_stderr": 0.048783173121456316,
+      "acc_norm": 0.38,
+      "acc_norm_stderr": 0.048783173121456316
+    }
+  },
+  "versions": {
+    "hendrycksTest-high_school_chemistry": 1,
+    "hendrycksTest-high_school_computer_science": 1
+  },
+  "config": {
+    "model": "hf-causal-experimental",
+    "model_args": "pretrained=meta-llama/Llama-2-7b-chat-hf,dtype=float16,use_accelerate=True",
+    "num_fewshot": 0,
+    "batch_size": null,
+    "batch_sizes": [],
+    "device": "auto",
+    "no_cache": false,
+    "limit": null,
+    "bootstrap_iters": 100000,
+    "description_dict": {}
+  }
+}
