@@ -6,7 +6,7 @@ from tqdm import tqdm
 import re
 import datasets
 import json
-model_name = "meta-llama/Llama-2-13b-chat-hf"
+model_name = "meta-llama/Llama-2-7b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 dataset_mmlu = datasets.load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/mmlu_test.hf")['test']
 dataset_bbq = pd.read_csv("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bbq_test.csv")
