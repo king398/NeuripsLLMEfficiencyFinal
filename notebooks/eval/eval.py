@@ -6,14 +6,14 @@ from tqdm import tqdm
 import re
 import datasets
 import json
-model_name = "meta-llama/Llama-2-7b-hf"
+model_name = "mosaicml/mpt-30b"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 dataset_mmlu = datasets.load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/mmlu_test.hf")['test']
 dataset_bbq = pd.read_csv("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bbq_test.csv")
 dataset_bbq = Dataset.from_pandas(dataset_bbq)
 dataset_truthful_qa_generation = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/truthful_qa_generation.hf")
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto",load_in_8bit=True)
 results = {"mmlu": [], "bbq": [], 'truthful_qa_mc': [], 'truthful_qa_generation': []}
 for i in tqdm(dataset_truthful_qa_generation, desc="Processing truthful_qa_generation"):
     prompt = f"Question: {i['question']}\n"
