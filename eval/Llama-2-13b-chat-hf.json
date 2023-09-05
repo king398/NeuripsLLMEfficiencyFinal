@@ -1,1 +1,6 @@
-{"mmlu": 51.26050420168067, "bbq": 48.58983838597232, "truthful_qa_mc": 0, "truthful_qa_generation": 16.891064871481028}
+{
+  "mmlu": 51.26050420168067,
+  "bbq": 48.58983838597232,
+  "truthful_qa_mc": 0,
+  "truthful_qa_generation": 16.891064871481028
+}

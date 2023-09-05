@@ -81,7 +81,7 @@ def create_big_bench_split(split_name):
 dataset = Parallel(n_jobs=16)(delayed(create_big_bench_split)(task_name) for task_name in tqdm(bigbench_task_list))
 
 dataset = concatenate_datasets(dataset)
-dataset.to_csv("/home/mithil/PycharmProjects/NeuripsLLM/data/train_bigbench.csv")
+dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bigbench_train")
 
 
 def return_prompt(example):
