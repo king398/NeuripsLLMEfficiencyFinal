@@ -8,9 +8,10 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel
+
 model_name = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-#model = AutoModel.from_pretrained(model_name).to(torch.device('cuda'))
+# model = AutoModel.from_pretrained(model_name).to(torch.device('cuda'))
 
 bigbench_task_list = ['abstract_narrative_understanding', 'anachronisms', 'analogical_similarity',
                       'analytic_entailment', 'arithmetic',
@@ -75,13 +76,16 @@ bigbench_task_list = ['abstract_narrative_understanding', 'anachronisms', 'analo
 
 
 def create_big_bench_split(split_name):
-    return load_dataset("bigbench", split_name)['train']
+    data = load_dataset("bigbench", split_name)['train']
+    data = data.shuffle(42)
+    data = data.select(range(int(len(data) * 0.01)))
+    return data
 
 
 dataset = Parallel(n_jobs=16)(delayed(create_big_bench_split)(task_name) for task_name in tqdm(bigbench_task_list))
 
 dataset = concatenate_datasets(dataset)
-dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bigbench_train")
+dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bigbench_train_small")
 
 
 def return_prompt(example):
