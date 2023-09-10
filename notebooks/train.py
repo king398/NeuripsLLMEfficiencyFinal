@@ -14,7 +14,7 @@ class CFG:
     CUDA_VISIBLE_DEVICES = "0"
     PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/training_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline-bigbench"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline-small-finetune"
     training_args = TrainingArguments(
         per_device_train_batch_size=4,
         num_train_epochs=1,

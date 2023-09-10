@@ -55,6 +55,7 @@ D. {i['choices']['text'][3]}
 Answer:{i['answerKey']}"""
     prompts.append(prompt)
 for i in tqdm(bigbench):
+    break
     prompt = create_prompt_bigbench(i)
     prompts.append(prompt)
 for i in tqdm(cnn_dailymail):
@@ -62,6 +63,7 @@ for i in tqdm(cnn_dailymail):
 Summary: {i['highlights']}"""
     prompts.append(prompt)
 for i in tqdm(gsm8k):
+    break
     prompt = f"""question: {i['question']}
 answer: {i['answer']}"""
 

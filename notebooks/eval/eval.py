@@ -8,7 +8,7 @@ import datasets
 import json
 import peft
 
-model_path = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline/checkpoint-3393"
+model_path = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline-small-finetune/checkpoint-4828"
 model_name = "meta-llama/Llama-2-7b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 dataset_mmlu = datasets.load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/mmlu_test.hf")['test']
@@ -18,7 +18,7 @@ dataset_truthful_qa_generation = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/truthful_qa_generation.hf")
 dataset_truthful_qa_mc = datasets.load_dataset("truthful_qa", "multiple_choice")['validation']
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map={"": 0})
-#model = peft.PeftModel.from_pretrained(model, model_path)
+model = peft.PeftModel.from_pretrained(model, model_path)
 results = {"mmlu": [], "bbq": [], 'truthful_qa_mc': [], 'truthful_qa_generation': []}
 for i in tqdm(dataset_truthful_qa_mc, desc="Processing truthful_qa_mc"):
     prompt = f"Question: {i['question']}\n"
