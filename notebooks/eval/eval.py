@@ -8,8 +8,8 @@ import datasets
 import json
 import peft
 
-model_path = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline-small-finetune/checkpoint-4828"
-model_name = "meta-llama/Llama-2-7b-hf"
+model_path = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/codellama-2-7b-baseline-lr-1e-4/checkpoint-4828"
+model_name = "codellama/CodeLlama-13b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 dataset_mmlu = datasets.load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/mmlu_test.hf")['test']
 dataset_bbq = pd.read_csv("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/bbq_test.csv")
@@ -17,10 +17,17 @@ dataset_bbq = Dataset.from_pandas(dataset_bbq)
 dataset_truthful_qa_generation = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/truthful_qa_generation.hf")
 dataset_truthful_qa_mc = datasets.load_dataset("truthful_qa", "multiple_choice")['validation']
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map={"": 0})
-model = peft.PeftModel.from_pretrained(model, model_path)
+from transformers import BitsAndBytesConfig
+
+
+
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map={"": 0},
+                                             load_in_8bit=True
+                                             )
+#model = peft.PeftModel.from_pretrained(model, model_path)
 results = {"mmlu": [], "bbq": [], 'truthful_qa_mc': [], 'truthful_qa_generation': []}
 for i in tqdm(dataset_truthful_qa_mc, desc="Processing truthful_qa_mc"):
+
     prompt = f"Question: {i['question']}\n"
     prompt += f"A. {i['mc1_targets']['choices'][0]}\n"
     for idx, answer in enumerate(i['mc1_targets']['choices']):
@@ -40,6 +47,7 @@ for i in tqdm(dataset_truthful_qa_mc, desc="Processing truthful_qa_mc"):
     results["truthful_qa_mc"].append(answer_llm == truth)
 
 for i in tqdm(dataset_truthful_qa_generation, desc="Processing truthful_qa_generation"):
+
     prompt = f"Question: {i['question']}\n"
 
     # Add the correct (or best) answer first and label it "A"
@@ -63,6 +71,7 @@ for i in tqdm(dataset_truthful_qa_generation, desc="Processing truthful_qa_gener
     results["truthful_qa_generation"].append(answer_llm == truth)
 
 for i in tqdm(dataset_bbq, desc="Processing bbq"):
+
     prompt = f"""Context: {i['context']}
     Question: {i['question']}
     A. {i['ans0']}
@@ -83,7 +92,8 @@ for i in tqdm(dataset_bbq, desc="Processing bbq"):
     results["bbq"].append(answer_llm == truth)
 for i in tqdm(dataset_mmlu, desc="Processing mmlu"):
 
-    prompt = f"""Question: {i['question']}
+    prompt = f"""
+    Question: {i['question']}
     A. {i['choices'][0]}
     B. {i['choices'][1]}
     C. {i['choices'][2]}

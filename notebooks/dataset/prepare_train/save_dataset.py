@@ -59,11 +59,12 @@ for i in tqdm(bigbench):
     prompt = create_prompt_bigbench(i)
     prompts.append(prompt)
 for i in tqdm(cnn_dailymail):
+
     prompt = f"""Document: {i['article']}
 Summary: {i['highlights']}"""
     prompts.append(prompt)
 for i in tqdm(gsm8k):
-    break
+
     prompt = f"""question: {i['question']}
 answer: {i['answer']}"""
 

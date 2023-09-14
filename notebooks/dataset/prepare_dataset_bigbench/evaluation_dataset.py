@@ -78,7 +78,7 @@ bigbench_task_list = ['abstract_narrative_understanding', 'anachronisms', 'analo
 def create_big_bench_split(split_name):
     data = load_dataset("bigbench", split_name)['train']
     data = data.shuffle(42)
-    data = data.select(range(int(len(data) * 0.01)))
+    data = data.select(range(int(len(data) * 0.02)))
     return data
 
 

@@ -9,12 +9,25 @@ import os
 import pandas as pd
 
 
+def find_all_linear_names(model):
+    cls = torch.nn.Linear
+    lora_module_names = set()
+    for name, module in model.named_modules():
+        if isinstance(module, cls):
+            names = name.split('.')
+            lora_module_names.add(names[0] if len(names) == 1 else names[-1])
+
+    if 'lm_head' in lora_module_names:  # needed for 16-bit
+        lora_module_names.remove('lm_head')
+    return list(lora_module_names)
+
+
 class CFG:
-    WANDB_PROJECT = 'NeuripsLLM-'
+    WANDB_PROJECT = 'NeuripsLLMEfficiency'
     CUDA_VISIBLE_DEVICES = "0"
-    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
+    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-13b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/training_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-baseline-small-finetune"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-13b-hf-lr-1e-4-all-module-no-bigbench"
     training_args = TrainingArguments(
         per_device_train_batch_size=4,
         num_train_epochs=1,
@@ -27,7 +40,7 @@ class CFG:
         overwrite_output_dir=True,
         save_total_limit=1,
         learning_rate=1e-4,
-        optim="adamw_hf",
+        optim="adamw_torch",
         seed=42,
         tf32=True,
         logging_steps=1,
@@ -42,17 +55,19 @@ tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     CFG.PRETRAINED_MODEL_NAME,
-    torch_dtype=torch.float16, device_map="auto")
-# model = prepare_model_for_kbit_training(model,use_gradient_checkpointing=False)
+    torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
+model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
+modules = find_all_linear_names(model)
+
 peft_config = LoraConfig(
     r=16,
     lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
-    task_type="CAUSAL_LM", )
-# target_modules=modules,
+    task_type="CAUSAL_LM",
+    target_modules=modules)
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 print(len(dataset))
 
