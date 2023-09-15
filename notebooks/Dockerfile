@@ -1,5 +1,7 @@
 FROM pytorch/pytorch
 RUN cd ..
-COPY inference /submission
+COPY . /submission
 WORKDIR /submission
-CMD ["python3", "main.py"]
+RUN pip install bitsandbytes
+RUN pip install -r requirements.txt
+CMD ["python3", "inference/main.py"]
