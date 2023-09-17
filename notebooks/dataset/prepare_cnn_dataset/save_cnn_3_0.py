@@ -5,7 +5,7 @@ from torch.cuda.amp import autocast
 from tqdm import tqdm
 from sklearn.neighbors import NearestNeighbors
 
-dataset = datasets.load_dataset("cnn_dailymail", "2.0.0")
+dataset = datasets.load_dataset("cnn_dailymail", "3.0.0")
 print(dataset['test'][0])
 model_name = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
