@@ -7,12 +7,4 @@ dataset = concatenate_datasets([load_dataset("heegyu/bbq", subset)['test'] for s
 
 # Shuffle and split the dataset
 dataset = dataset.shuffle(seed=42)
-train_test_split = dataset.train_test_split(test_size=0.2)
-
-# Convert to pandas DataFrame
-train_df = train_test_split['train'].to_pandas()
-test_df = train_test_split['test'].to_pandas()
-
-# Save as CSV files
-train_df.to_csv("bbq_train.csv", index=False)
-test_df.to_csv("bbq_test.csv", index=False)
+print(dataset)
