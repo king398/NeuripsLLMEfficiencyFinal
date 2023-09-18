@@ -5,3 +5,5 @@ dataset_generation.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficien
 
 dataset_mc = load_dataset("truthful_qa", "multiple_choice")['validation']
 dataset_mc.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/truthful_qa_mc.hf")
+dataset = concatenate_datasets([dataset_mc, dataset_generation])
+dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/truthful_qa")

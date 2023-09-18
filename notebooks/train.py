@@ -1,5 +1,5 @@
 import datasets
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments,
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 from datasets import Dataset
 from peft import LoraConfig, prepare_model_for_kbit_training
@@ -7,7 +7,7 @@ from transformers.trainer_callback import TrainerCallback
 import torch
 import os
 import pandas as pd
-im
+
 
 def find_all_linear_names(model):
     cls = torch.nn.Linear

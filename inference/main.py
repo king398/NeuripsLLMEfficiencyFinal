@@ -24,7 +24,7 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "meta-llama/Llama-2-7b-chat-hf"
+model_name = "meta-llama/Llama-2-7b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 LLAMA2_CONTEXT_LENGTH = 4096
@@ -60,7 +60,8 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
 
     t = time.perf_counter() - t0
 
-    output = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
+    output = tokenizer.decode(outputs.sequences[0][prompt_length:], skip_special_tokens=True)
+    print(output)
     tokens_generated = outputs.sequences[0].size(0) - prompt_length
     logger.info(
         f"Time for inference: {t:.02f} sec total, {tokens_generated / t:.02f} tokens/sec"
