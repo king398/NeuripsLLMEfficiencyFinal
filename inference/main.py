@@ -24,7 +24,7 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "meta-llama/Llama-2-7b-hf"
+model_name = "openlm-research/open_llama_3b"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 LLAMA2_CONTEXT_LENGTH = 4096

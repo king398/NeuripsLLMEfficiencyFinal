@@ -66,5 +66,15 @@ def filter_by_similarity(example):
 
 # Apply the filter function
 filtered_dataset = dataset['test'].filter(filter_by_similarity)
+
+
+def make_prompt(example):
+    prompt = f"""Document:{example['article']}
+    Summary: {example['article']}"""
+    return {"prompt": prompt}
+
+
+filtered_dataset = filtered_dataset.map(make_prompt)
+
 filtered_dataset.save_to_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/cnn_dailymail_2_0")

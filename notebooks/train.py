@@ -25,9 +25,9 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency'
     CUDA_VISIBLE_DEVICES = "0"
-    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-13b-hf"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/training_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-13b-hf-lr-1e-4-all-module-no-bigbench"
+    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-lr-1e-4-baseline"
     training_args = TrainingArguments(
         per_device_train_batch_size=4,
         num_train_epochs=1,
@@ -55,8 +55,7 @@ tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     CFG.PRETRAINED_MODEL_NAME,
-    torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
-model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
+    torch_dtype=torch.bfloat16, device_map="auto")
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
@@ -70,7 +69,7 @@ peft_config = LoraConfig(
     target_modules=modules)
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 print(len(dataset))
-
+print(dataset)
 
 class PeftSavingCallback(TrainerCallback):
     def on_save(self, args, state, control, **kwargs):
