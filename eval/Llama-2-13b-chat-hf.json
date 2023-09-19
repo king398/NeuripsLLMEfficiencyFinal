@@ -1,6 +1,23 @@
 {
-  "mmlu": 51.26050420168067,
-  "bbq": 48.58983838597232,
-  "truthful_qa_mc": 0,
-  "truthful_qa_generation": 16.891064871481028
+  "bbq": 0.45,
+  "gsm8k": 0,
+  "mmlu (subject=high_school_biology)": 0.416,
+  "mmlu (subject=high_school_chemistry)": 0.416,
+  "mmlu (subject=high_school_computer_science)": 0.396,
+  "mmlu (subject=high_school_european_history)": 0.696,
+  "mmlu (subject=high_school_geography)": 0.466,
+  "mmlu (subject=high_school_government_and_politics)": 0.69,
+  "mmlu (subject=high_school_macroeconomics)": 0.386,
+  "mmlu (subject=high_school_mathematics)": 0.322,
+  "mmlu (subject=high_school_microeconomics)": 0.416,
+  "mmlu (subject=high_school_physics)": 0.264,
+  "mmlu (subject=high_school_psychology)": 0.724,
+  "mmlu (subject=high_school_statistics)": 0.261,
+  "mmlu (subject=high_school_us_history)": 0.562,
+  "mmlu (subject=high_school_world_history)": 0.607,
+  "mmlu (subject=moral_disputes)": 0.494,
+  "mmlu (subject=moral_scenarios)": 0.261,
+  "mmlu (subject=philosophy)": 0.604,
+  "summarization (dataset_name=cnn-dm,sampling_min_length=50,sampling_max_length=150,doc_max_length=512)": 0.152,
+  "truthful_qa (task=mc_single)": 0.23
 }

@@ -86,7 +86,7 @@ trainer = SFTTrainer(
     max_seq_length=1024,
     args=CFG.training_args,
     tokenizer=tokenizer,
-    dataset_text_field="prompts",
+    dataset_text_field="prompt",
     peft_config=peft_config,
     callbacks=[PeftSavingCallback()],
 
