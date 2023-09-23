@@ -3,14 +3,15 @@ from datasets import Dataset, DatasetDict
 
 import glob
 
-truthful_qa = datasets.load_from_disk(
-    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/truthful_qa")
-mmlu = datasets.load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/mmlu_test")
 cnn_dailymail = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/cnn_dailymail_2_0")
-bbq = datasets.load_from_disk(
-    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/BBQ")
-texts = mmlu['prompt'] + cnn_dailymail['prompt'] + bbq['prompt'] + truthful_qa['prompt']
+gsm8k = datasets.load_from_disk(
+    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/gsm8k"
+)
+openbookqa = datasets.load_from_disk(
+    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/openbookqa"
+)
+texts = cnn_dailymail['prompt'] + gsm8k['prompt'] + openbookqa['prompt']
 
 data = {"prompt": texts}
 

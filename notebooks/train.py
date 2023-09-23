@@ -25,17 +25,17 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency'
     CUDA_VISIBLE_DEVICES = "0"
-    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
+    PRETRAINED_MODEL_NAME = "codellama/CodeLlama-13b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-lr-1e-4-baseline"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/CodeLlama-13b-hf-lr-1e-4-baseline"
     training_args = TrainingArguments(
-        per_device_train_batch_size=4,
+        per_device_train_batch_size=1,
         num_train_epochs=1,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
         gradient_checkpointing=True,
-        gradient_accumulation_steps=1,
+        gradient_accumulation_steps=4,
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=1,
@@ -55,7 +55,8 @@ tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     CFG.PRETRAINED_MODEL_NAME,
-    torch_dtype=torch.bfloat16, device_map="auto")
+    torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
+model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
@@ -71,6 +72,7 @@ dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 print(len(dataset))
 print(dataset)
 
+
 class PeftSavingCallback(TrainerCallback):
     def on_save(self, args, state, control, **kwargs):
         checkpoint_path = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
@@ -83,7 +85,7 @@ class PeftSavingCallback(TrainerCallback):
 trainer = SFTTrainer(
     model,
     train_dataset=dataset,
-    max_seq_length=1024,
+    max_seq_length=1536,
     args=CFG.training_args,
     tokenizer=tokenizer,
     dataset_text_field="prompt",

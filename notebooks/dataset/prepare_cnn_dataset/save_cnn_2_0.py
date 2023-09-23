@@ -4,9 +4,10 @@ import torch
 from torch.cuda.amp import autocast
 from tqdm import tqdm
 from sklearn.neighbors import NearestNeighbors
+import numpy as np1
 
 dataset = datasets.load_dataset("cnn_dailymail", "2.0.0")
-print(dataset['test'][0])
+print(dataset['train'][0])
 model_name = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name).to(torch.device('cuda'))
@@ -37,15 +38,33 @@ def get_embeddings(texts):
     return embeddings
 
 
-text = dataset['test']['article']
+text = dataset['train']['article']
 
 embeddings = get_embeddings(text)
 embeddings_np = embeddings.cpu().numpy()
 
 # Using NearestNeighbors to find the closest neighbors (most similar items)
-knn = NearestNeighbors(n_neighbors=2, metric="cosine", n_jobs=-1)  # n_neighbors=2 to include the point itself
+knn = NearestNeighbors(n_neighbors=2, metric="cosine", n_jobs=-1)
 knn.fit(embeddings_np)
-distances, _ = knn.kneighbors(embeddings_np)
+
+# Initialize an empty list to collect the distances
+collected_distances = []
+
+# Define batch size for querying the index
+query_batch_size = 256
+
+# Loop through embeddings in batches and query the index
+for i in tqdm(range(0, len(embeddings_np), query_batch_size)):
+    batch_query = embeddings_np[i:i + query_batch_size]
+    batch_distances, _ = knn.kneighbors(batch_query, 2)
+
+    # Convert cosine similarities to cosine distances
+    batch_distances = 1 - batch_distances
+
+    collected_distances.append(batch_distances)
+
+# Concatenate all the distances
+distances = np.concatenate(collected_distances, axis=0)
 
 
 def add_max_cosine_similarity(example, distances):
@@ -54,10 +73,10 @@ def add_max_cosine_similarity(example, distances):
 
 
 # Add an index column to the dataset for tracking
-dataset['test'] = dataset['test'].add_column('index', list(range(len(dataset['test']))))
+dataset['train'] = dataset['train'].add_column('index', list(range(len(dataset['train']))))
 
 # Use the map function to add the max_cosine_similarity
-dataset['test'] = dataset['test'].map(partial(add_max_cosine_similarity, distances=distances))
+dataset['train'] = dataset['train'].map(partial(add_max_cosine_similarity, distances=distances))
 
 
 def filter_by_similarity(example):
@@ -65,7 +84,7 @@ def filter_by_similarity(example):
 
 
 # Apply the filter function
-filtered_dataset = dataset['test'].filter(filter_by_similarity)
+filtered_dataset = dataset['train'].filter(filter_by_similarity)
 
 
 def make_prompt(example):
