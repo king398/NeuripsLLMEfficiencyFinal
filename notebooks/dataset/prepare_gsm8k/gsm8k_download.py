@@ -4,8 +4,8 @@ dataset = datasets.load_dataset("gsm8k", "main")['train']
 
 
 def make_prompt(example):
-    prompt = f"""Question:{example['question']}
-    Answer:{example['answer']}"""
+    prompt = f"""Q:{example['question']}
+    A:{example['answer']}"""
     return {"prompt": prompt}
 
 

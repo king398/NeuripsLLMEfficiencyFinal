@@ -7,7 +7,7 @@ class ProcessRequest(BaseModel):
     prompt: str
     num_samples: int = 1
     max_new_tokens: int = 200
-    top_k: int = 5
+    top_k: int = 50
     temperature: float = 0.8
     seed: Optional[int] = None
 

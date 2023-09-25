@@ -8,12 +8,13 @@ import numpy as np1
 
 dataset = datasets.load_dataset("cnn_dailymail", "2.0.0")['train']
 dataset = dataset.shuffle(seed=42)
-dataset = dataset.select(range(int(len(dataset) * 0.03)))
+dataset = dataset.select(range(int(len(dataset) * 0.05)))
 
 
 def make_prompt(example):
     prompt = f"""Document:{example['article']}
-    Summary: {example['article']}"""
+Summarize the above article in 3 sentences.
+Summary:{example['highlights']}"""
     return {"prompt": prompt}
 
 

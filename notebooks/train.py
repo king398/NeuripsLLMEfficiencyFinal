@@ -9,6 +9,7 @@ import os
 import pandas as pd
 
 
+
 def find_all_linear_names(model):
     cls = torch.nn.Linear
     lora_module_names = set()
@@ -25,17 +26,17 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency'
     CUDA_VISIBLE_DEVICES = "0"
-    PRETRAINED_MODEL_NAME = "codellama/CodeLlama-13b-hf"
+    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/CodeLlama-13b-hf-lr-1e-4-baseline"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-2-epoch"
     training_args = TrainingArguments(
-        per_device_train_batch_size=1,
-        num_train_epochs=1,
+        per_device_train_batch_size=2,
+        num_train_epochs=2,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
         gradient_checkpointing=True,
-        gradient_accumulation_steps=4,
+        gradient_accumulation_steps=2,
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=1,
@@ -44,6 +45,8 @@ class CFG:
         seed=42,
         tf32=True,
         logging_steps=1,
+        dataloader_num_workers=8,
+        dataloader_pin_memory=True,
 
     )
 
@@ -55,8 +58,8 @@ tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     CFG.PRETRAINED_MODEL_NAME,
-    torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
-model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
+    torch_dtype=torch.bfloat16, device_map="auto")
+# model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
@@ -69,8 +72,6 @@ peft_config = LoraConfig(
     task_type="CAUSAL_LM",
     target_modules=modules)
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
-print(len(dataset))
-print(dataset)
 
 
 class PeftSavingCallback(TrainerCallback):
@@ -91,6 +92,7 @@ trainer = SFTTrainer(
     dataset_text_field="prompt",
     peft_config=peft_config,
     callbacks=[PeftSavingCallback()],
+
 
 )
 
