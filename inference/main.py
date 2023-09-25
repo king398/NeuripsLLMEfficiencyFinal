@@ -1,13 +1,15 @@
-from fastapi import FastAPI
+import gc
 
+from fastapi import FastAPI
 import logging
 import os
 import time
-
+# import peft
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from huggingface_hub import login
 from torch.cuda.amp import autocast
+
 login(token=os.environ["HUGGINGFACE_TOKEN"])
 
 torch.set_float32_matmul_precision("high")
@@ -25,9 +27,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 model_name = "meta-llama/Llama-2-7b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto", )
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto")
 # model = peft.PeftModel.from_pretrained(model,
-#                                     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-baseline/checkpoint-5261")
+# "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-2-epoch/checkpoint-10044")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -67,7 +69,6 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t = time.perf_counter() - t0
 
     output = tokenizer.decode(outputs.sequences[0][prompt_length:], skip_special_tokens=True)
-    print(output)
     tokens_generated = outputs.sequences[0].size(0) - prompt_length
     logger.info(
         f"Time for inference: {t:.02f} sec total, {tokens_generated / t:.02f} tokens/sec"
@@ -94,7 +95,9 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             Token(text=tokenizer.decode(t), logprob=lp, top_logprob=token_tlp)
         )
     logprob_sum = gen_logprobs.sum().item()
-
+    del outputs, encoded
+    gc.collect()
+    torch.cuda.empty_cache()
     return ProcessResponse(
         text=output, tokens=generated_tokens, logprob=logprob_sum, request_time=t
     )

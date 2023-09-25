@@ -39,7 +39,7 @@ class CFG:
         gradient_accumulation_steps=2,
         save_strategy="epoch",
         overwrite_output_dir=True,
-        save_total_limit=1,
+        save_total_limit=2,
         learning_rate=1e-4,
         optim="adamw_torch",
         seed=42,
