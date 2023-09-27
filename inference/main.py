@@ -9,6 +9,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from huggingface_hub import login
 from torch.cuda.amp import autocast
+import peft
 
 login(token=os.environ["HUGGINGFACE_TOKEN"])
 
@@ -25,11 +26,12 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "meta-llama/Llama-2-7b-hf"
+model_name = "meta-llama/Llama-2-13b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto")
-# model = peft.PeftModel.from_pretrained(model,
-# "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-2-epoch/checkpoint-10044")
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
+                                             )
+model = peft.PeftModel.from_pretrained(model,
+                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-2-epoch/checkpoint-10044")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
