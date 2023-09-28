@@ -29,9 +29,10 @@ logging.basicConfig(level=logging.INFO)
 model_name = "meta-llama/Llama-2-13b-hf"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
+                                             load_in_8bit=True
                                              )
 model = peft.PeftModel.from_pretrained(model,
-                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-hf-2-epoch/checkpoint-10044")
+                                       "Mithilss/Llama-2-13b-hf-2-epoch-checkpoint-10044")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -52,9 +53,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
 
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
-    with torch.no_grad() and autocast(dtype=torch.bfloat16) and torch.backends.cuda.sdp_kernel(enable_flash=True,
-                                                                                               enable_math=False,
-                                                                                               enable_mem_efficient=False):
+    with torch.no_grad():
         outputs = model.generate(
             **encoded,
             max_new_tokens=input_data.max_new_tokens,
@@ -63,14 +62,14 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             top_k=input_data.top_k,
             return_dict_in_generate=True,
             output_scores=True,
-            repetition_penalty=1.0,
-            pad_token_id=
-            tokenizer.eos_token_id
         )
 
     t = time.perf_counter() - t0
+    if not input_data.echo_prompt:
+        output = tokenizer.decode(outputs.sequences[0][prompt_length:], skip_special_tokens=True)
+    else:
+        output = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
 
-    output = tokenizer.decode(outputs.sequences[0][prompt_length:], skip_special_tokens=True)
     tokens_generated = outputs.sequences[0].size(0) - prompt_length
     logger.info(
         f"Time for inference: {t:.02f} sec total, {tokens_generated / t:.02f} tokens/sec"
@@ -85,7 +84,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     gen_logprobs = torch.gather(log_probs, 2, gen_sequences[:, :, None]).squeeze(-1)
 
     top_indices = torch.argmax(log_probs, dim=-1)
-    top_logprobs = torch.gather(log_probs, 2, top_indices[:, :, None]).squeeze(-1)
+    top_logprobs = torch.gather(log_probs, 2, top_indices[:,:,None]).squeeze(-1)
     top_indices = top_indices.tolist()[0]
     top_logprobs = top_logprobs.tolist()[0]
 
@@ -97,9 +96,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             Token(text=tokenizer.decode(t), logprob=lp, top_logprob=token_tlp)
         )
     logprob_sum = gen_logprobs.sum().item()
-    del outputs, encoded
-    gc.collect()
-    torch.cuda.empty_cache()
+
     return ProcessResponse(
         text=output, tokens=generated_tokens, logprob=logprob_sum, request_time=t
     )

@@ -18,6 +18,5 @@ data = {"prompt": texts}
 # Create a Dataset from this data
 dataset = Dataset.from_dict(data)
 dataset = dataset.shuffle(seed=42)
-dataset = dataset.select(range(int(len(dataset) * 0.75)))
 # If you want to wrap it in a DatasetDict
 dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts")

@@ -27,10 +27,10 @@ class CFG:
     CUDA_VISIBLE_DEVICES = "0"
     PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-13b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-13b-hf-2-epoch"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-13b-hf-1-epoch-more-data"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=2,
+        num_train_epochs=1,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
