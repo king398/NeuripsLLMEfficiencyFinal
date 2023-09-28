@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from huggingface_hub import login
 from torch.cuda.amp import autocast
 import peft
+from transformers.generation import GenerationConfig
 
 login(token=os.environ["HUGGINGFACE_TOKEN"])
 
@@ -26,13 +27,14 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "meta-llama/Llama-2-13b-hf"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_name = "mistralai/Mistral-7B-v0.1"
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             load_in_8bit=True
-                                             )
-model = peft.PeftModel.from_pretrained(model,
-                                       "Mithilss/Llama-2-13b-hf-2-epoch-checkpoint-10044")
+                                             trust_remote_code=True
+                                             ).eval()
+
+# model = peft.PeftModel.from_pretrained(model,
+#                                      "Mithilss/Llama-2-13b-hf-2-epoch-checkpoint-10044")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -62,6 +64,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             top_k=input_data.top_k,
             return_dict_in_generate=True,
             output_scores=True,
+            eos_token_id=tokenizer.eos_token_id,
         )
 
     t = time.perf_counter() - t0
@@ -69,7 +72,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
         output = tokenizer.decode(outputs.sequences[0][prompt_length:], skip_special_tokens=True)
     else:
         output = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
-
+    print(output)
     tokens_generated = outputs.sequences[0].size(0) - prompt_length
     logger.info(
         f"Time for inference: {t:.02f} sec total, {tokens_generated / t:.02f} tokens/sec"
@@ -84,7 +87,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     gen_logprobs = torch.gather(log_probs, 2, gen_sequences[:, :, None]).squeeze(-1)
 
     top_indices = torch.argmax(log_probs, dim=-1)
-    top_logprobs = torch.gather(log_probs, 2, top_indices[:,:,None]).squeeze(-1)
+    top_logprobs = torch.gather(log_probs, 2, top_indices[:, :, None]).squeeze(-1)
     top_indices = top_indices.tolist()[0]
     top_logprobs = top_logprobs.tolist()[0]
 

@@ -25,9 +25,9 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency'
     CUDA_VISIBLE_DEVICES = "0"
-    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-13b-hf"
+    PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-13b-hf-1-epoch-more-data"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-baseline"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -52,13 +52,11 @@ class CFG:
 
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 os.environ["CUDA_VISIBLE_DEVICES"] = CFG.CUDA_VISIBLE_DEVICES
-tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME)
+tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
+model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.bfloat16, device_map="auto",
+                                             trust_remote_code=True)
 
-model = AutoModelForCausalLM.from_pretrained(
-    CFG.PRETRAINED_MODEL_NAME,
-    torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
-model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
