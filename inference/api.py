@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 class ProcessRequest(BaseModel):
     prompt: str
     num_samples: int = 1
-    max_new_tokens: int = 100
+    max_new_tokens: int = 50
     top_k: int = 200
     temperature: float = 0.8
     seed: Optional[int] = None

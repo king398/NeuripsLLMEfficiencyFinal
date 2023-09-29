@@ -2,17 +2,11 @@ import gc
 
 from fastapi import FastAPI
 import logging
-import os
 import time
-# import peft
+import peft
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from huggingface_hub import login
-from torch.cuda.amp import autocast
-import peft
-from transformers.generation import GenerationConfig
 
-login(token=os.environ["HUGGINGFACE_TOKEN"])
 
 torch.set_float32_matmul_precision("high")
 
@@ -30,11 +24,9 @@ logging.basicConfig(level=logging.INFO)
 model_name = "mistralai/Mistral-7B-v0.1"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True
-                                             ).eval()
+                                             trust_remote_code=True, ).eval()
 
-# model = peft.PeftModel.from_pretrained(model,
-#                                      "Mithilss/Llama-2-13b-hf-2-epoch-checkpoint-10044")
+model = peft.PeftModel.from_pretrained(model, "Mithilss/Mistral-7B-1-epoch-baseline")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 

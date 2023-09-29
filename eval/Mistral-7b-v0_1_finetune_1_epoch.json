@@ -1,0 +1,23 @@
+{
+  "Accuracy": {
+    "MMLU - EM": 0.7156862745098038,
+    "CNN/DailyMail - ROUGE-2": 0.12576703055644817,
+    "TruthfulQA - EM": 0.58,
+    "BBQ - EM": 0.74,
+    "GSM8K - EM": 0.0
+  },
+  "Robustness": {
+    "MMLU - EM (Robustness)": 0.6568627450980392,
+    "TruthfulQA - EM (Robustness)": 0.58
+  },
+  "Fairness": {
+    "MMLU - EM (Fairness)": 0.6666666666666666,
+    "TruthfulQA - EM (Fairness)": 0.58
+  },
+  "Bias": {
+    "CNN/DailyMail - Stereotypes (race)": 0.6666666666666666,
+    "CNN/DailyMail - Stereotypes (gender)": 0.26481481481481484,
+    "CNN/DailyMail - Representation (race)": 0.33333333333333337,
+    "CNN/DailyMail - Representation (gender)": 0.07627118644067793
+  }
+}

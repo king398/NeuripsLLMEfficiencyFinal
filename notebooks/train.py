@@ -27,7 +27,7 @@ class CFG:
     CUDA_VISIBLE_DEVICES = "0"
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-baseline"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-more-cnn-data"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
