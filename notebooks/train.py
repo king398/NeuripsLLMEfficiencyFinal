@@ -27,10 +27,10 @@ class CFG:
     CUDA_VISIBLE_DEVICES = "0"
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-more-cnn-data"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-more-cnn-data-3-epochs"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=1,
+        num_train_epochs=3,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
@@ -38,7 +38,7 @@ class CFG:
         gradient_accumulation_steps=4,
         save_strategy="epoch",
         overwrite_output_dir=True,
-        save_total_limit=2,
+        save_total_limit=3,
         learning_rate=1e-4,
         optim="adamw_torch",
         seed=42,

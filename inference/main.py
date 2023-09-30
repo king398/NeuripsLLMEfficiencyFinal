@@ -23,10 +23,11 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 model_name = "mistralai/Mistral-7B-v0.1"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True, ).eval()
 
-model = peft.PeftModel.from_pretrained(model, "Mithilss/Mistral-7B-1-epoch-baseline")
+model = peft.PeftModel.from_pretrained(model, "Mithilss/Mistral-7B-1-epoch-more-cnn-data-3-epochs-checkpoint-3rd-epoch")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 

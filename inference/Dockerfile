@@ -12,7 +12,7 @@ COPY . /submission/
 ENV HUGGINGFACE_TOKEN=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
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN huggingface-cli  download mistralai/Mistral-7B-v0.1
-RUN huggingface-cli  download Mithilss/Mistral-7B-1-epoch-baseline
+RUN huggingface-cli download Mithilss/Mistral-7B-1-epoch-more-cnn-data-3-epochs-checkpoint-3rd-epoch
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git
