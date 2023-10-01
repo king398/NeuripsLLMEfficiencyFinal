@@ -7,6 +7,7 @@ from transformers.trainer_callback import TrainerCallback
 import torch
 import os
 import pandas as pd
+import accelerate
 
 
 def find_all_linear_names(model):
@@ -23,11 +24,10 @@ def find_all_linear_names(model):
 
 
 class CFG:
-    WANDB_PROJECT = 'NeuripsLLMEfficiency'
-    CUDA_VISIBLE_DEVICES = "0"
+    WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epochs-hh-rlhf-commen-sense-qa"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/platypus"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-platypus"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -35,26 +35,30 @@ class CFG:
         bf16=True,
         output_dir=output_dir,
         gradient_checkpointing=True,
-        gradient_accumulation_steps=4,
+        gradient_accumulation_steps=16,
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=3,
-        learning_rate=1e-4,
+        learning_rate=4e-4,
         optim="adamw_torch",
         seed=42,
         tf32=True,
         logging_steps=1,
         dataloader_num_workers=8,
         dataloader_pin_memory=True,
+        lr_scheduler_type="cosine",
+        warmup_steps=100,
+        weight_decay=0,
 
     )
 
 
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
-os.environ["CUDA_VISIBLE_DEVICES"] = CFG.CUDA_VISIBLE_DEVICES
-tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
+                                          padding=False, max_length=2048)
 tokenizer.pad_token = tokenizer.eos_token
-model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.bfloat16, device_map="auto",
+
+model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.bfloat16,
                                              trust_remote_code=True)
 
 model.gradient_checkpointing_enable()
@@ -63,11 +67,11 @@ modules = find_all_linear_names(model)
 print(modules)
 peft_config = LoraConfig(
     r=16,
-    lora_alpha=32,
+    lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules= ['q_proj','k_proj','v_proj','o_proj','gate_proj','down_proj','up_proj','lm_head'])
+    target_modules=['gate_proj', 'up_proj', 'down_proj'])
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 
@@ -83,7 +87,7 @@ class PeftSavingCallback(TrainerCallback):
 trainer = SFTTrainer(
     model,
     train_dataset=dataset,
-    max_seq_length=1220,
+    max_seq_length=4096,
     args=CFG.training_args,
     tokenizer=tokenizer,
     dataset_text_field="prompt",

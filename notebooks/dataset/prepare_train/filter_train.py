@@ -17,7 +17,7 @@ commonsenseqa = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/commonsense_qa")
 hh_rlhf = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/hh_rlhf")
-texts = cnn_dailymail['prompt'] + gsm8k['prompt'] + openbookqa['prompt'] + commonsenseqa['prompt'] + hh_rlhf['prompt']
+texts = cnn_dailymail['prompt']  + openbookqa['prompt'] + commonsenseqa['prompt'] + hh_rlhf['prompt']
 
 data = {"prompt": texts}
 

@@ -6,6 +6,7 @@ import time
 import peft
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformer_engine.common import recipe
 
 torch.set_float32_matmul_precision("high")
 
@@ -20,14 +21,14 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "Qwen/Qwen-14B"
+model_name = "mistralai/Mistral-7B-v0.1"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, load_in_8bit=True).eval()
+                                             trust_remote_code=True, ).eval()
 
-# model = peft.PeftModel.from_pretrained(model,
-#                                      "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-2-epochs-hella-swag-commen-sense-qa/checkpoint-10849")
+model = peft.PeftModel.from_pretrained(model,
+                                       "Mithilss/Mistral-7B-1-epoch-platypus")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
