@@ -15,7 +15,9 @@ hellswag = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/hellaswag")
 commonsenseqa = datasets.load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/commonsense_qa")
-texts = cnn_dailymail['prompt'] + gsm8k['prompt'] + openbookqa['prompt'] + hellswag['prompt'] + commonsenseqa['prompt']
+hh_rlhf = datasets.load_from_disk(
+    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/hh_rlhf")
+texts = cnn_dailymail['prompt'] + gsm8k['prompt'] + openbookqa['prompt'] + commonsenseqa['prompt'] + hh_rlhf['prompt']
 
 data = {"prompt": texts}
 

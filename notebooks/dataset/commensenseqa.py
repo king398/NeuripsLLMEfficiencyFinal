@@ -18,5 +18,4 @@ def make_prompt(example):
 
 dataset = dataset.map(make_prompt)
 dataset = dataset.shuffle(seed=42)
-dataset = dataset.select(range(4000))
 dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/commonsense_qa")

@@ -27,10 +27,10 @@ class CFG:
     CUDA_VISIBLE_DEVICES = "0"
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/all_prompts"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-more-cnn-data-3-epochs"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epochs-hh-rlhf-commen-sense-qa"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=3,
+        num_train_epochs=1,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
@@ -60,14 +60,14 @@ model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dt
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
-
+print(modules)
 peft_config = LoraConfig(
     r=16,
     lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules=modules)
+    target_modules= ['q_proj','k_proj','v_proj','o_proj','gate_proj','down_proj','up_proj','lm_head'])
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 
