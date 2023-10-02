@@ -28,7 +28,7 @@ model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloa
                                              trust_remote_code=True, ).eval()
 
 model = peft.PeftModel.from_pretrained(model,
-                                       "Mithilss/Mistral-7B-1-epoch-platypus")
+                                       "Mithilss/Mistral-7B-1-epoch-platypus-cnn-all-modules")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -60,7 +60,6 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             output_scores=True,
             eos_token_id=tokenizer.eos_token_id,
         )
-    print(tokenizer.decode(outputs.sequences[0]))
 
     t = time.perf_counter() - t0
     if not input_data.echo_prompt:

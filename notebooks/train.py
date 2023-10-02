@@ -27,7 +27,7 @@ class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/platypus"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-platypus"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-platypus-cnn-all-modules-lr-1e-5"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -35,11 +35,11 @@ class CFG:
         bf16=True,
         output_dir=output_dir,
         gradient_checkpointing=True,
-        gradient_accumulation_steps=16,
+        gradient_accumulation_steps=8,
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=3,
-        learning_rate=4e-4,
+        learning_rate=1e-5,
         optim="adamw_torch",
         seed=42,
         tf32=True,
@@ -56,6 +56,7 @@ class CFG:
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
                                           padding=False, max_length=2048)
+tokenizer.padding_side = "right"
 tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.bfloat16,
@@ -71,7 +72,7 @@ peft_config = LoraConfig(
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules=['gate_proj', 'up_proj', 'down_proj'])
+    target_modules=modules)
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 
@@ -87,7 +88,7 @@ class PeftSavingCallback(TrainerCallback):
 trainer = SFTTrainer(
     model,
     train_dataset=dataset,
-    max_seq_length=4096,
+    max_seq_length=2048,
     args=CFG.training_args,
     tokenizer=tokenizer,
     dataset_text_field="prompt",

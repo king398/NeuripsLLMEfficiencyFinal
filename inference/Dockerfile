@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/pytorch:23.09-py3
+FROM huggingface/transformers-pytorch-gpu
 # Install Git and Git LFS
 RUN pip install --upgrade huggingface_hub
 
@@ -16,7 +16,7 @@ COPY . /submission/
 ENV HUGGINGFACE_TOKEN=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
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN huggingface-cli  download mistralai/Mistral-7B-v0.1
-RUN huggingface-cli download Mithilss/Mistral-7B-1-epoch-platypus
+RUN huggingface-cli download Mithilss/Mistral-7B-1-epoch-platypus-cnn-all-modules
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git bitsandbytes transformers_stream_generator==0.0.4 tiktoken
