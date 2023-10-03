@@ -1,4 +1,3 @@
-import gc
 
 from fastapi import FastAPI
 import logging
@@ -6,7 +5,6 @@ import time
 import peft
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformer_engine.common import recipe
 
 torch.set_float32_matmul_precision("high")
 
@@ -27,8 +25,8 @@ tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True, ).eval()
 
-model = peft.PeftModel.from_pretrained(model,
-                                       "Mithilss/Mistral-7B-1-epoch-platypus-cnn-all-modules")
+# model = peft.PeftModel.from_pretrained(model,
+#                                      "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-platypus-cnn-all-modules-lr-1e-5/checkpoint-2020")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
