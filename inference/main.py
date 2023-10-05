@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 import logging
 import time
@@ -19,14 +18,14 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "mistralai/Mistral-7B-v0.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+model_name = "Qwen/Qwen-14B"
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, pad_token="<|endoftext|>")
 tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True, ).eval()
 
-# model = peft.PeftModel.from_pretrained(model,
-#                                      "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Mistral-7B-1-epoch-platypus-cnn-all-modules-lr-1e-5/checkpoint-2020")
+model = peft.PeftModel.from_pretrained(model,
+                                       "Mithilss/qwen-14b-finetune")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 

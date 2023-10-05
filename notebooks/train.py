@@ -7,7 +7,6 @@ from transformers.trainer_callback import TrainerCallback
 import torch
 import os
 import pandas as pd
-import accelerate
 
 
 def find_all_linear_names(model):
@@ -25,9 +24,9 @@ def find_all_linear_names(model):
 
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
-    PRETRAINED_MODEL_NAME = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/Qwen-7B"
+    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/platypus"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen-7B-1-epoch-platypus-cnn-all-modules-lr-1e-5"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-7B-1-epoch-platypus"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -55,10 +54,11 @@ class CFG:
 
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
-                                          padding=False, max_length=2048,pad_token="<|endoftext|>")
+                                          padding=False, max_length=2048)
 tokenizer.padding_side = "right"
+tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.bfloat16,
-                                             trust_remote_code=True,use_flash_attn=False)
+                                             trust_remote_code=True)
 
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
@@ -96,3 +96,4 @@ trainer = SFTTrainer(
 )
 
 trainer.train()
+trainer.save_model()

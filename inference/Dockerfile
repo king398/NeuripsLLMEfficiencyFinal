@@ -8,15 +8,15 @@ RUN apt-get update && \
 RUN pip install packaging ninja
 # Clone and install flash-attention
 RUN git clone -b v1.0.8 https://github.com/Dao-AILab/flash-attention && \
-    cd flash-attention && pip install . && pip install csrc/layer_norm csrc/rotary
+   cd flash-attention && pip install . && pip install csrc/layer_norm csrc/rotary
 
 # Set environment variables
 WORKDIR /submission
 COPY . /submission/
 ENV HUGGINGFACE_TOKEN=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
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
-RUN huggingface-cli  download Qwen/Qwen-7B
-#RUN huggingface-cli download Mithilss/Mistral-7B-1-epoch-platypus-cnn-all-modules
+RUN huggingface-cli  download Qwen/Qwen-14B
+RUN huggingface-cli download Mithilss/qwen-14b-finetune
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git bitsandbytes transformers_stream_generator==0.0.4 tiktoken

@@ -22,7 +22,7 @@ Output:{example['output']}"""
 
 
 dataset = dataset.map(make_prompt)
-prompts = dataset['prompt'] + dataset_cnn['prompt'] + dataset_openbookqa['prompt']
+prompts = dataset_cnn['prompt'] + dataset_openbookqa['prompt'] + dataset['prompt']
 data = {"prompt": prompts}
 dataset = Dataset.from_dict(data)
 dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/platypus")
