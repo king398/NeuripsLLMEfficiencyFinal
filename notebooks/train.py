@@ -24,9 +24,9 @@ def find_all_linear_names(model):
 
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
-    PRETRAINED_MODEL_NAME = "meta-llama/Llama-2-7b-hf"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/platypus"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Llama-2-7b-7B-1-epoch-platypus"
+    PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -65,7 +65,7 @@ model.config.use_cache = False
 modules = find_all_linear_names(model)
 print(modules)
 peft_config = LoraConfig(
-    r=16,
+    r=64,
     lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
