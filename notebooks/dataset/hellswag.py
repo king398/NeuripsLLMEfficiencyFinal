@@ -5,7 +5,7 @@ print(dataset[0]['endings'])
 
 
 def make_prompt(example):
-    prompt = f"Activity : {example['activity_label']} \nSentence:{example['ctx']} {example['endings'][int(example['label'])]} "
+    prompt = ""
     return {"prompt": prompt}
 
 
