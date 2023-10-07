@@ -65,7 +65,7 @@ model.config.use_cache = False
 modules = find_all_linear_names(model)
 print(modules)
 peft_config = LoraConfig(
-    r=64,
+    r=32,
     lora_alpha=16,
     lora_dropout=0.05,
     bias="none",

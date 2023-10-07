@@ -25,7 +25,7 @@ model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloa
                                              trust_remote_code=True, ).eval()
 
 model = peft.PeftModel.from_pretrained(model,
-                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq/checkpoint-1977")
+                                       "Mithilss/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
