@@ -8,12 +8,12 @@ def make_prompt(example):
     options = [example['distractor1'], example['distractor2'], example['distractor3'], example['correct_answer']]
     random.shuffle(options)
     prompt = f"""Question: {example['question']}
-    A. {options[0]}
-    B. {options[1]}
-    C. {options[2]}
-    D. {options[3]}
-    Answer: {example['correct_answer']}    
-    Support: {example['support']}"""
+A. {options[0]}
+B. {options[1]}
+C. {options[2]}
+D. {options[3]}
+Answer: {example['correct_answer']}    
+Support: {example['support']}"""
     return {"prompt": prompt}
 
 

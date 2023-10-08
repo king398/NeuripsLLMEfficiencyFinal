@@ -25,11 +25,11 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-hellaswag"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-hellaswag-small-dataset"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=1,
+        num_train_epochs=3,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
@@ -48,6 +48,7 @@ class CFG:
         lr_scheduler_type="cosine",
         warmup_steps=100,
         weight_decay=0,
+        save_safetensors=True,
 
     )
 

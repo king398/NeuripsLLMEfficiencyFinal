@@ -7,19 +7,9 @@ dataset_openbookqa = load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/openbookqa")
 dataset_sciq = load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/sciq")
 
+dataset_hellaswag = load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/hellaswag")
 
-def make_prompt(example):
-    if example['input'] != "":
-        prompt = f"""{example['input']}
-Instruction:{example['instruction']}
-Output:{example['output']}"""
-    else:
-        prompt = f"""Instruction:{example['instruction']}
-Output:{example['output']}"""
-    return {"prompt": prompt}
-
-
-prompts = dataset_cnn['prompt'] + dataset_openbookqa['prompt'] + dataset_sciq['prompt']
+prompts = dataset_cnn['prompt'] + dataset_openbookqa['prompt'] + dataset_sciq['prompt'] + dataset_hellaswag['prompt']
 data = {"prompt": prompts}
 dataset = Dataset.from_dict(data)
-dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq")
+dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-hellaswag")
