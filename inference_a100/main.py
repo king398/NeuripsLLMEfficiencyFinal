@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
 model_name = "Qwen/Qwen-14B"
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True,eos_token="<|endoftext|>")
 tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, use_flash_attn=True,
-                                             load_in_8bit=True).eval()
+                                             trust_remote_code=True, use_flash_attn=True,load_in_8bit=True
+                                         ).eval()
 
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
@@ -45,16 +45,18 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
     with torch.no_grad():
-        outputs = model.generate(
-            **encoded,
-            max_new_tokens=input_data.max_new_tokens,
-            do_sample=True,
-            temperature=input_data.temperature,
-            top_k=input_data.top_k,
-            return_dict_in_generate=True,
-            output_scores=True,
-            eos_token_id=tokenizer.eos_token_id,
-        )
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+
+            outputs = model.generate(
+                **encoded,
+                max_new_tokens=input_data.max_new_tokens,
+                do_sample=True,
+                temperature=input_data.temperature,
+                top_k=input_data.top_k,
+                return_dict_in_generate=True,
+                output_scores=True,
+                eos_token_id=tokenizer.eos_token_id,
+            )
 
     t = time.perf_counter() - t0
     if not input_data.echo_prompt:

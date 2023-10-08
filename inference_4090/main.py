@@ -25,7 +25,7 @@ model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloa
                                              trust_remote_code=True, ).eval()
 
 model = peft.PeftModel.from_pretrained(model,
-                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-hellaswag-small-dataset/checkpoint-125")
+                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-dollybricks/checkpoint-2915")
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -50,9 +50,9 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
         outputs = model.generate(
             **encoded,
             max_new_tokens=input_data.max_new_tokens,
-            do_sample=True,
-            temperature=input_data.temperature,
-            top_k=input_data.top_k,
+            do_sample=False,
+            temperature=0,
+            #top_k=input_data.top_k,
             return_dict_in_generate=True,
             output_scores=True,
             eos_token_id=tokenizer.eos_token_id,

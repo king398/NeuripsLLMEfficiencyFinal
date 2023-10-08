@@ -15,10 +15,10 @@ WORKDIR /submission
 COPY . /submission/
 ENV HUGGINGFACE_TOKEN=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
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
-RUN huggingface-cli  download Qwen/Qwen-14b
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git bitsandbytes
+RUN python3 cache.py
 
 # Run cache script and start FastAPI
 RUN ls
