@@ -25,11 +25,11 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "mistralai/Mistral-7B-v0.1"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-hellaswag"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-hellaswag-small-dataset"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-dollybricks"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-dollybricks"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=3,
+        num_train_epochs=1,
         bf16_full_eval=True,
         bf16=True,
         output_dir=output_dir,
@@ -64,7 +64,6 @@ model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dt
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
-print(modules)
 peft_config = LoraConfig(
     r=32,
     lora_alpha=16,
