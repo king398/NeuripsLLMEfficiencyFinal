@@ -1,9 +1,10 @@
+import gc
+
 from fastapi import FastAPI
 import logging
 import time
-import peft
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 torch.set_float32_matmul_precision("high")
 
@@ -18,14 +19,20 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "mistralai/Mistral-7B-v0.1"
+model_name = "Qwen/Qwen-14B"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, ).eval()
+nf4_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
 
-model = peft.PeftModel.from_pretrained(model,
-                                       "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/mistralai/Mistral-7B-v0.1-1-epoch-cnn-openbookqa-sciq-dollybricks/checkpoint-2915")
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
+                                             trust_remote_code=True, use_flash_attention_2=True, quantization_config=nf4_config
+                                             ).eval()
+
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
 
@@ -47,16 +54,17 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
     with torch.no_grad():
-        outputs = model.generate(
-            **encoded,
-            max_new_tokens=input_data.max_new_tokens,
-            do_sample=False,
-            temperature=0,
-            #top_k=input_data.top_k,
-            return_dict_in_generate=True,
-            output_scores=True,
-            eos_token_id=tokenizer.eos_token_id,
-        )
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+            outputs = model.generate(
+                **encoded,
+                max_new_tokens=input_data.max_new_tokens,
+                do_sample=True,
+                temperature=input_data.temperature,
+                top_k=input_data.top_k,
+                return_dict_in_generate=True,
+                output_scores=True,
+                eos_token_id=tokenizer.eos_token_id,
+            )
 
     t = time.perf_counter() - t0
     if not input_data.echo_prompt:
@@ -89,7 +97,9 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
             Token(text=tokenizer.decode(t), logprob=lp, top_logprob=token_tlp)
         )
     logprob_sum = gen_logprobs.sum().item()
-
+    del outputs, encoded, gen_sequences, gen_logprobs, top_indices, top_logprobs, log_probs
+    torch.cuda.empty_cache()
+    gc.collect()
     return ProcessResponse(
         text=output, tokens=generated_tokens, logprob=logprob_sum, request_time=t
     )

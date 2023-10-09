@@ -2,7 +2,7 @@ import datasets
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 from datasets import Dataset
-from peft import LoraConfig, prepare_model_for_kbit_training
+from peft import LoraConfig, prepare_model_for_kbit_training,get_peft_model
 from transformers.trainer_callback import TrainerCallback
 import torch
 import os
@@ -64,13 +64,16 @@ model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dt
 model.gradient_checkpointing_enable()
 model.config.use_cache = False
 modules = find_all_linear_names(model)
+
 peft_config = LoraConfig(
-    r=32,
+    r=64,
     lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
     target_modules=modules)
+model = get_peft_model(model, peft_config)
+model.print_trainable_parameters()
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 

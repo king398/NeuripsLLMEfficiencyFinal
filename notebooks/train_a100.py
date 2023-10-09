@@ -4,6 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments,
     DataCollatorForLanguageModeling, TrainerCallback
 import torch
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
+from torch.cuda.amp import autocast
 
 
 def find_all_linear_names(model):
@@ -21,7 +22,7 @@ def find_all_linear_names(model):
 
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
-    PRETRAINED_MODEL_NAME = "Qwen/Qwen-7B"
+    PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
     DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-dollybricks"
     output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-7B-1-epoch-cnn-openbookqa-sciq-dollybricks"
     training_args = TrainingArguments(
@@ -52,13 +53,14 @@ class CFG:
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 
 tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
-                                          padding=False, max_length=1536, pad_token="<|endoftext|>")
+                                          padding=False, max_length=1024, pad_token="<|endoftext|>")
 tokenizer.padding_side = "right"
 
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
-                                             trust_remote_code=True, use_flash_attn=False)
+                                             trust_remote_code=True, use_flash_attn=False, load_in_8bit=True, )
 
 # Assuming the functions for kbit training, gradient checkpointing, and enabling input gradients are valid and necessary
+model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.enable_input_require_grads()
 
@@ -66,7 +68,7 @@ model.config.use_cache = False
 
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
-    r=32,
+    r=16,
     lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
@@ -81,7 +83,7 @@ dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    return tokenizer(examples["prompt"], truncation=True, padding="max_length", max_length=1536)
+    return tokenizer(examples["prompt"], truncation=True, padding="max_length", max_length=1024)
 
 
 class PeftSavingCallback(TrainerCallback):
@@ -105,5 +107,6 @@ trainer = Trainer(
     callbacks=[PeftSavingCallback()],
 )
 
-trainer.train()
+with autocast():
+    trainer.train()
 trainer.save_model(CFG.output_dir)
