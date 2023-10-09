@@ -5,6 +5,7 @@ import logging
 import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from peft import PeftModel
 
 torch.set_float32_matmul_precision("high")
 
@@ -19,8 +20,9 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "Qwen/Qwen-14B"
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+model_name = "qwen-14b-finetune"
+tokenizer_name = "Qwen/Qwen-14B"
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 nf4_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -30,8 +32,9 @@ nf4_config = BitsAndBytesConfig(
 )
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, use_flash_attention_2=True, quantization_config=nf4_config
+                                             trust_remote_code=True, quantization_config=nf4_config, use_flash_attn=True
                                              ).eval()
+
 
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()

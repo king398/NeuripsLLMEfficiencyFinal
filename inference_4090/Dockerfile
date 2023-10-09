@@ -18,8 +18,8 @@ RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git bitsandbytes
+RUN huggingface-cli download Mithilss/qwen-14b-finetune
 RUN python3 cache.py
-
 # Run cache script and start FastAPI
 RUN ls
 CMD ["python3","-m","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]

@@ -19,12 +19,12 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "Qwen/Qwen-14B"
+model_name = "internlm/internlm-20b"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, use_flash_attn=True
+                                             trust_remote_code=True, load_in_8bit=True,
                                              ).eval()
 
 LLAMA2_CONTEXT_LENGTH = 4096
