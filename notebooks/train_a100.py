@@ -23,11 +23,11 @@ def find_all_linear_names(model):
 class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-dollybricks"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-7B-1-epoch-cnn-openbookqa-sciq-dollybricks"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-lima"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-cnn-openbookqa-sciq-lima"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=1,
+        num_train_epochs=2,
         fp16_full_eval=True,
         fp16=True,
         output_dir=output_dir,
@@ -53,11 +53,11 @@ class CFG:
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 
 tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
-                                          padding=False, max_length=1024, pad_token="<|endoftext|>")
+                                          padding=False, max_length=1536, )
 tokenizer.padding_side = "right"
-
+tokenizer.pad_token = "<|endoftext|>"
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
-                                             trust_remote_code=True, use_flash_attn=False, load_in_8bit=True, )
+                                             trust_remote_code=True, load_in_8bit=True, )
 
 # Assuming the functions for kbit training, gradient checkpointing, and enabling input gradients are valid and necessary
 model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
@@ -108,5 +108,6 @@ trainer = Trainer(
 )
 
 with autocast():
-    trainer.train()
+    with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+        trainer.train()
 trainer.save_model(CFG.output_dir)

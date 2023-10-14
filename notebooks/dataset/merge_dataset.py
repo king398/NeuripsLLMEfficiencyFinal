@@ -8,7 +8,8 @@ dataset_openbookqa = load_from_disk(
 dataset_sciq = load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/sciq")
 
 dataset_dollybricks = load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/dollybricks")
-prompts = dataset_cnn['prompt'] + dataset_openbookqa['prompt'] + dataset_sciq['prompt'] + dataset_dollybricks['prompt']
+dataset_lima = load_from_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/lima")
+prompts = dataset_cnn['prompt'] + dataset_openbookqa['prompt'] + dataset_sciq['prompt']  + dataset_lima['prompt']
 data = {"prompt": prompts}
 dataset = Dataset.from_dict(data)
-dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-dollybricks")
+dataset.save_to_disk("/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-lima")

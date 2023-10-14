@@ -5,7 +5,7 @@ import logging
 import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from peft import PeftModel
+from torch.cuda.amp import autocast
 
 torch.set_float32_matmul_precision("high")
 
@@ -25,18 +25,14 @@ tokenizer_name = "Qwen/Qwen-14B"
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 nf4_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_compute_dtype=torch.bfloat16
+    load_in_8bit=True,
 )
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True, quantization_config=nf4_config, use_flash_attn=True
                                              ).eval()
 
-
-LLAMA2_CONTEXT_LENGTH = 4096
+LLAMA2_CONTEXT_LENGTH = 2048
 app = FastAPI()
 
 
@@ -57,7 +53,8 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
     with torch.no_grad():
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False,
+                                            enable_mem_efficient=False) and autocast(dtype=torch.bfloat16):
             outputs = model.generate(
                 **encoded,
                 max_new_tokens=input_data.max_new_tokens,

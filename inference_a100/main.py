@@ -5,7 +5,7 @@ import logging
 import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-
+from torch.cuda.amp import autocast
 torch.set_float32_matmul_precision("high")
 
 from api import (
@@ -20,12 +20,14 @@ logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
 model_name = "internlm/internlm-20b"
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+tokenizer_name = "internlm/internlm-20b"
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, load_in_8bit=True,
+                                             trust_remote_code=True,load_in_8bit=True
                                              ).eval()
+
 
 LLAMA2_CONTEXT_LENGTH = 4096
 app = FastAPI()
@@ -48,7 +50,7 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
     with torch.no_grad():
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False) and autocast(dtype=torch.bfloat16):
             outputs = model.generate(
                 **encoded,
                 max_new_tokens=input_data.max_new_tokens,
