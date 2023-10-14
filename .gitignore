@@ -2,3 +2,8 @@
 /data/mmlu_test.csv
 /data/mmlu_train.pkl
 /data/train_bigbench.csv
+.idea/
+/models/
+/notebooks/whatever.csv
+/platypus/
+
