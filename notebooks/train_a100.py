@@ -21,13 +21,14 @@ def find_all_linear_names(model):
 
 
 class CFG:
+    max_length = 1280
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-openbookqa-sciq-lima"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-cnn-openbookqa-sciq-lima"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-platypus-dollybricks"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-cnn-platypus-dollybricks"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
-        num_train_epochs=2,
+        num_train_epochs=1,
         fp16_full_eval=True,
         fp16=True,
         output_dir=output_dir,
@@ -36,7 +37,7 @@ class CFG:
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=3,
-        learning_rate=1e-5,
+        learning_rate=1e-4,
         optim="adamw_torch",
         seed=42,
         tf32=True,
@@ -47,13 +48,14 @@ class CFG:
         warmup_steps=100,
         weight_decay=0,
         save_safetensors=True,
+
     )
 
 
 os.environ['WANDB_PROJECT'] = CFG.WANDB_PROJECT
 
 tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remote_code=True, truncation=True,
-                                          padding=False, max_length=1536, )
+                                          padding=False, max_length=CFG.max_length, )
 tokenizer.padding_side = "right"
 tokenizer.pad_token = "<|endoftext|>"
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
@@ -69,7 +71,7 @@ model.config.use_cache = False
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
     r=16,
-    lora_alpha=16,
+    lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -83,7 +85,7 @@ dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    return tokenizer(examples["prompt"], truncation=True, padding="max_length", max_length=1024)
+    return tokenizer(examples["prompt"], truncation=True, padding="longest", max_length=CFG.max_length)
 
 
 class PeftSavingCallback(TrainerCallback):

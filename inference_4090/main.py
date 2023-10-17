@@ -6,6 +6,7 @@ import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from torch.cuda.amp import autocast
+from peft import PeftModel
 
 torch.set_float32_matmul_precision("high")
 
@@ -29,10 +30,11 @@ nf4_config = BitsAndBytesConfig(
 )
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
-                                             trust_remote_code=True, quantization_config=nf4_config, use_flash_attn=True
+                                             trust_remote_code=True,
+                                             use_flash_attn=True, quantization_config=nf4_config
                                              ).eval()
 
-LLAMA2_CONTEXT_LENGTH = 2048
+LLAMA2_CONTEXT_LENGTH = 3072
 app = FastAPI()
 
 
