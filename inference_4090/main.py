@@ -31,7 +31,7 @@ nf4_config = BitsAndBytesConfig(
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True,
-                                             use_flash_attn=True,quantization_config=nf4_config
+                                             use_flash_attn=True,
                                              ).eval()
 
 LLAMA2_CONTEXT_LENGTH = 3072

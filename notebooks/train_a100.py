@@ -5,7 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments,
 import torch
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from torch.cuda.amp import autocast
-
+from datasets import Dataset
 
 def find_all_linear_names(model):
     cls = torch.nn.Linear
@@ -85,7 +85,15 @@ dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    return tokenizer(examples["prompt"], truncation=True, padding="longest", max_length=CFG.max_length)
+    tokenized_inputs = tokenizer(examples["prompt"], truncation=True, padding="longest", max_length=CFG.max_length)
+    # Add a field for the sequence length.
+    return tokenized_inputs
+
+# Tokenize the dataset.
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+# Now, we create a function to sort the tokenized dataset based on sequence length.
+
 
 
 class PeftSavingCallback(TrainerCallback):
@@ -97,7 +105,7 @@ class PeftSavingCallback(TrainerCallback):
             os.remove(os.path.join(checkpoint_path, "pytorch_model.bin"))
 
 
-tokenized_datasets = dataset.map(tokenize_function, batched=True)
+tokenized_datasets = tokenized_datasets.map(tokenize_function, batched=True)
 
 # Use the Hugging Face Trainer
 trainer = Trainer(
