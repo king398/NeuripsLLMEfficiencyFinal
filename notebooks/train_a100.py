@@ -24,8 +24,8 @@ class CFG:
     max_length = 1280
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn-platypus-dollybricks"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-cnn-platypus-dollybricks"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/merged_datasets/openbookqa_scienceqa_cnn_sciq_lima"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-openbookqa_scienceqa_cnn_sciq_lima"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -37,7 +37,7 @@ class CFG:
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=3,
-        learning_rate=1e-4,
+        learning_rate=1e-5,
         optim="adamw_torch",
         seed=42,
         tf32=True,
@@ -70,8 +70,8 @@ model.config.use_cache = False
 
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
+    r=8 ,
+    lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -110,6 +110,6 @@ trainer = Trainer(
 )
 
 with autocast():
-    with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
+    with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
         trainer.train()
 trainer.save_model(CFG.output_dir)

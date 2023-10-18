@@ -8,7 +8,7 @@ import numpy as np1
 
 dataset = datasets.load_dataset("cnn_dailymail", "2.0.0")['train']
 dataset = dataset.shuffle(seed=42)
-dataset = dataset.select(range(15000))
+dataset = dataset.select(range(25000))
 
 
 def make_prompt(example):
