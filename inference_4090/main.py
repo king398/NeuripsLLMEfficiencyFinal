@@ -55,8 +55,8 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
     t0 = time.perf_counter()
     encoded = {k: v.to("cuda") for k, v in encoded.items()}
     with torch.no_grad():
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False,
-                                            enable_mem_efficient=False) and autocast(dtype=torch.bfloat16):
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True,
+                                            enable_mem_efficient=True) and autocast(dtype=torch.bfloat16):
             outputs = model.generate(
                 **encoded,
                 max_new_tokens=input_data.max_new_tokens,

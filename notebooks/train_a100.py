@@ -7,6 +7,7 @@ from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from torch.cuda.amp import autocast
 from datasets import Dataset
 
+
 def find_all_linear_names(model):
     cls = torch.nn.Linear
     lora_module_names = set()
@@ -24,8 +25,8 @@ class CFG:
     max_length = 1280
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/merged_datasets/openbookqa_scienceqa_cnn_sciq_lima"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-openbookqa_scienceqa_cnn_sciq_lima"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/merged_datasets/openbookqa_cnn_ScienceQA_commonsense_dollybricks"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-openbookqa_cnn_ScienceQA_commonsense_dollybricks"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -70,8 +71,8 @@ model.config.use_cache = False
 
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
-    r=8 ,
-    lora_alpha=16,
+    r=16,
+    lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -89,11 +90,12 @@ def tokenize_function(examples):
     # Add a field for the sequence length.
     return tokenized_inputs
 
+
 # Tokenize the dataset.
 tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
-# Now, we create a function to sort the tokenized dataset based on sequence length.
 
+# Now, we create a function to sort the tokenized dataset based on sequence length.
 
 
 class PeftSavingCallback(TrainerCallback):

@@ -10,6 +10,6 @@ model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloa
                                              trust_remote_code=True
                                              ).eval()
 model = PeftModel.from_pretrained(model,
-                                  "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-epoch-openbookqa_scienceqa_cnn_sciq_lima/checkpoint-2448")
+                                  "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-openbookqa_cnn_ScienceQA_commonsense_dollybricks/")
 model = model.merge_and_unload()
 model.save_pretrained("qwen-14b-finetune", safe_serialization=True)

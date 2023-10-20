@@ -1,7 +1,7 @@
 from datasets import load_dataset, load_from_disk, Dataset
 
 dataset = load_dataset("garage-bAInd/Open-Platypus")['train']
-exclude = ['airoboros',"MATH/PRM-800K"]
+exclude = ['airoboros',"MATH/PRM-800K","leetcode_ne"]
 dataset = dataset.filter(lambda example: example['data_source'] not in exclude)
 
 
