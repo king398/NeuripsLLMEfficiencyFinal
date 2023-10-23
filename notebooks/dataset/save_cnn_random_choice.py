@@ -6,7 +6,7 @@ from tqdm import tqdm
 from sklearn.neighbors import NearestNeighbors
 import numpy as np1
 
-dataset = datasets.load_dataset("cnn_dailymail", "3.0.0")['train']
+dataset = datasets.load_dataset("ccdv/cnn_dailymail", "2.0.0")['train']
 dataset = dataset.shuffle(seed=42)
 dataset = dataset.select(range(15000))
 
@@ -21,4 +21,5 @@ Summary:{example['highlights']}"""
 
 dataset = dataset.map(make_prompt)
 dataset.save_to_disk(
-    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/cnn_dailymail_2_0")
+    "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/cnn_dailymail_1_0")
+print(dataset[0]['prompt'])

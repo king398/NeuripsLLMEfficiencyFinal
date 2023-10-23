@@ -1,11 +1,10 @@
 import os
 import datasets
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer, \
-    DataCollatorForLanguageModeling, TrainerCallback
+    DataCollatorForLanguageModeling, TrainerCallback,BitsAndBytesConfig
 import torch
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from torch.cuda.amp import autocast
-from datasets import Dataset
 
 
 def find_all_linear_names(model):
@@ -25,8 +24,8 @@ class CFG:
     max_length = 1280
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/merged_datasets/openbookqa_cnn_ScienceQA_commonsense_dollybricks"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-openbookqa_cnn_ScienceQA_commonsense_dollybricks"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn_1_0_0_dollybricks_platypus_bbq"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -34,7 +33,7 @@ class CFG:
         fp16=True,
         output_dir=output_dir,
         gradient_checkpointing=True,
-        gradient_accumulation_steps=8,
+        gradient_accumulation_steps=16,
         save_strategy="epoch",
         overwrite_output_dir=True,
         save_total_limit=3,
@@ -59,10 +58,16 @@ tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remot
                                           padding=False, max_length=CFG.max_length, )
 tokenizer.padding_side = "right"
 tokenizer.pad_token = "<|endoftext|>"
-model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
-                                             trust_remote_code=True, load_in_8bit=True, )
+nf4_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="fp4",
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_compute_dtype=torch.float16
+)
 
-# Assuming the functions for kbit training, gradient checkpointing, and enabling input gradients are valid and necessary
+model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
+                                             trust_remote_code=True, quantization_config=nf4_config, device_map="auto",use_flash_attn=False)
+
 model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
 model.enable_input_require_grads()
@@ -71,8 +76,8 @@ model.config.use_cache = False
 
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
+    r=32,
+    lora_alpha=64,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -80,19 +85,17 @@ peft_config = LoraConfig(
 )
 model = get_peft_model(model, peft_config)
 model.print_trainable_parameters()
-
 dataset = datasets.load_from_disk(CFG.DATASET_PATH)
 
 
 # Tokenize the dataset
 def tokenize_function(examples):
     tokenized_inputs = tokenizer(examples["prompt"], truncation=True, padding="longest", max_length=CFG.max_length)
-    # Add a field for the sequence length.
     return tokenized_inputs
 
 
 # Tokenize the dataset.
-tokenized_datasets = dataset.map(tokenize_function, batched=True)
+tokenized_datasets = dataset.map(tokenize_function, batched=True,num_proc=16)
 
 
 # Now, we create a function to sort the tokenized dataset based on sequence length.
@@ -107,7 +110,6 @@ class PeftSavingCallback(TrainerCallback):
             os.remove(os.path.join(checkpoint_path, "pytorch_model.bin"))
 
 
-tokenized_datasets = tokenized_datasets.map(tokenize_function, batched=True)
 
 # Use the Hugging Face Trainer
 trainer = Trainer(
@@ -119,7 +121,7 @@ trainer = Trainer(
     callbacks=[PeftSavingCallback()],
 )
 
-with autocast():
+with autocast(dtype=torch.float16):
     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
         trainer.train()
 trainer.save_model(CFG.output_dir)
