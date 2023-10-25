@@ -10,6 +10,6 @@ model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloa
                                              trust_remote_code=True
                                              ).eval()
 model = PeftModel.from_pretrained(model,
-                                  "Mithilss/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32")
+                                  "Mithilss/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_16")
 model = model.merge_and_unload()
 model.save_pretrained("qwen-14b-finetune", safe_serialization=True)

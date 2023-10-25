@@ -1,7 +1,7 @@
 import os
 import datasets
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer, \
-    DataCollatorForLanguageModeling, TrainerCallback,BitsAndBytesConfig
+    DataCollatorForLanguageModeling, TrainerCallback, BitsAndBytesConfig
 import torch
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from torch.cuda.amp import autocast
@@ -21,11 +21,11 @@ def find_all_linear_names(model):
 
 
 class CFG:
-    max_length = 1280
+    max_length = 2200
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
-    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn_1_0_0_dollybricks_platypus_bbq"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32"
+    DATASET_PATH = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn_2_0_0_dollybricks_platypus_bbq"
+    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_16"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -60,13 +60,15 @@ tokenizer.padding_side = "right"
 tokenizer.pad_token = "<|endoftext|>"
 nf4_config = BitsAndBytesConfig(
     load_in_4bit=True,
-    bnb_4bit_quant_type="fp4",
-    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_use_double_quant=True
+    ,
     bnb_4bit_compute_dtype=torch.float16
 )
 
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
-                                             trust_remote_code=True, quantization_config=nf4_config, device_map="auto",use_flash_attn=False)
+                                             trust_remote_code=True, quantization_config=nf4_config, device_map="auto",
+                                             use_flash_attn=False)
 
 model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 model.gradient_checkpointing_enable()
@@ -76,8 +78,8 @@ model.config.use_cache = False
 
 modules = find_all_linear_names(model)
 peft_config = LoraConfig(
-    r=32,
-    lora_alpha=64,
+    r=16,
+    lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -95,7 +97,15 @@ def tokenize_function(examples):
 
 
 # Tokenize the dataset.
-tokenized_datasets = dataset.map(tokenize_function, batched=True,num_proc=16)
+tokenized_datasets = dataset.map(tokenize_function, batched=False, num_proc=16)
+list_of_lens = []
+for i in range(len(tokenized_datasets)):
+    list_of_lens.append(len(tokenized_datasets[i]['input_ids']))
+max_len_index = list_of_lens.index(max(list_of_lens))
+print(tokenized_datasets[max_len_index]['prompt'])
+print(len(tokenizer(tokenized_datasets[max_len_index]['prompt'])['input_ids']))
+print(list_of_lens.count(CFG.max_length))
+# plot histogram of lengths
 
 
 # Now, we create a function to sort the tokenized dataset based on sequence length.
@@ -108,7 +118,6 @@ class PeftSavingCallback(TrainerCallback):
 
         if "pytorch_model.bin" in os.listdir(checkpoint_path):
             os.remove(os.path.join(checkpoint_path, "pytorch_model.bin"))
-
 
 
 # Use the Hugging Face Trainer
