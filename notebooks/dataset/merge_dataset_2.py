@@ -1,4 +1,5 @@
 from datasets import load_dataset, load_from_disk, Dataset
+from huggingface_hub import Repository
 
 dataset_cnn = load_from_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/filtered_datasets/cnn_dailymail_2_0")
@@ -10,3 +11,4 @@ data = {"prompt": prompts}
 dataset = Dataset.from_dict(data)
 dataset.save_to_disk(
     "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/data/cnn_2_0_0_dollybricks_platypus_bbq")
+repo = Repository("cnn_2_0_0_dollybricks_platypus_bbq",clone_from="Mithilss/cnn_2_0_0_dollybricks_platypus_bbq",)
