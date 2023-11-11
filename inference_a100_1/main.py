@@ -25,13 +25,11 @@ model_name = "qwen-14b-finetune"
 tokenizer_name = "Qwen/Qwen-14B"
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
-nf4_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-)
+
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True,
-                                             use_flash_attn=True,
+                                             use_flash_attn=True
                                              ).eval()
 
 LLAMA2_CONTEXT_LENGTH = 3072

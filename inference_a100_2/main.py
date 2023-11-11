@@ -21,20 +21,22 @@ from api import (
 logger = logging.getLogger(__name__)
 # Configure the logging module
 logging.basicConfig(level=logging.INFO)
-model_name = "qwen-14b-finetune"
+model_name = "Qwen/Qwen-14b"
 tokenizer_name = "Qwen/Qwen-14B"
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
-nf4_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-)
+
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto",
                                              trust_remote_code=True,
                                              use_flash_attn=True,
                                              ).eval()
+model = PeftModel.from_pretrained(model,
+                                  "Mithilss/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32_2_0")
+model = model.merge_and_unload()
 
-LLAMA2_CONTEXT_LENGTH = 3072
+
+LLAMA2_CONTEXT_LENGTH = 2560
 app = FastAPI()
 
 
