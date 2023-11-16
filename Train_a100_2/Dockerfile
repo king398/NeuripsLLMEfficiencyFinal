@@ -13,7 +13,8 @@ RUN git clone  https://github.com/Dao-AILab/flash-attention && \
 # Set environment variables
 WORKDIR /submission
 COPY . /submission/
-ENV HUGGINGFACE_TOKEN=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
+# Please put your own huggingface token here that has the write permission
+ENV HUGGINGFACE_TOKEN=xxxx
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN pip install -r requirements.txt
 # Install other dependencies

@@ -5,6 +5,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments,
 import torch
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from torch.cuda.amp import autocast
+
+
 ### training scrip for the model present in the inference_4090_2 folder
 
 def find_all_linear_names(model):
@@ -48,6 +50,8 @@ class CFG:
         warmup_steps=100,
         weight_decay=0,
         save_safetensors=True,
+        push_to_hub=True,
+        hub_model_id="NeuripsReproduction"
 
     )
 
@@ -105,6 +109,8 @@ max_len_index = list_of_lens.index(max(list_of_lens))
 print(tokenized_datasets[max_len_index]['prompt'])
 print(len(tokenizer(tokenized_datasets[max_len_index]['prompt'])['input_ids']))
 print(list_of_lens.count(CFG.max_length))
+
+
 # plot histogram of lengths
 
 
@@ -134,3 +140,4 @@ with autocast(dtype=torch.float16):
     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
         trainer.train()
 trainer.save_model(CFG.output_dir)
+trainer.push_to_hub()
