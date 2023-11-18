@@ -16,10 +16,12 @@ COPY . /submission/
 # Please put your own huggingface token here that has the write permission
 ENV HUGGINGFACE_TOKEN=xxxx
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
+
 RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install accelerate==0.24.0 transformers==4.34.0 bitsandbytes==0.41.0 tiktoken einops transformers_stream_generator==0.0.4
 # Run cache script and start FastAPI
+RUN wandb login your_wandb_token
 RUN ls
 CMD ["python3","train_4090_2.py"]
 
