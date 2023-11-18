@@ -8,3 +8,6 @@ dropped the chatgpt data from http://platypus-llm.github.io using <img width="92
 
 
 wandb run - https://wandb.ai/mithil/NeuripsLLMEfficiency2/runs/fizyfm4s/logs?workspace=user-mithil for my best model 
+
+
+link to the adapater - https://huggingface.co/Mithilss/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32_2_0
