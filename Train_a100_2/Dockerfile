@@ -21,7 +21,7 @@ RUN pip install -r requirements.txt
 # Install other dependencies
 RUN pip install accelerate==0.24.0 transformers==4.34.0 bitsandbytes==0.41.0 tiktoken einops transformers_stream_generator==0.0.4
 # Run cache script and start FastAPI
-RUN wandb login your_wandb_token
+RUN wandb login 79bf58a5e3925b4f5cec27209792bd186b111f32
 RUN ls
 CMD ["python3","train_4090_2.py"]
 
