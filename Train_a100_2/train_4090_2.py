@@ -63,11 +63,7 @@ tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remot
 tokenizer.padding_side = "right"
 tokenizer.pad_token = "<|endoftext|>"
 nf4_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_use_double_quant=True
-    ,
-    bnb_4bit_compute_dtype=torch.float16
+    load_in_8bit=True,
 )
 
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
