@@ -8,7 +8,7 @@ RUN apt-get update && \
 RUN pip install packaging ninja
 # Clone and install flash-attention
 RUN git clone  https://github.com/Dao-AILab/flash-attention && \
-  cd flash-attention && pip install . && pip install csrc/layer_norm csrc/rotary
+  cd flash-attention && pip install .
 
 # Set environment variables
 WORKDIR /submission
@@ -18,7 +18,7 @@ ENV HUGGINGFACE_TOKEN=xxxx
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN pip install -r requirements.txt
 # Install other dependencies
-RUN pip install git+https://github.com/huggingface/accelerate.git git+https://github.com/huggingface/transformers.git bitsandbytes tiktoken einops transformers_stream_generator==0.0.4
+RUN pip install git+https://github.com/huggingface/accelerate.git transformers==4.34.0 bitsandbytes tiktoken einops transformers_stream_generator==0.0.4
 # Run cache script and start FastAPI
 RUN ls
 CMD ["python3","train_4090_2.py"]
