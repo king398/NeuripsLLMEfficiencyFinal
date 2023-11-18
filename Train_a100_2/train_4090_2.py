@@ -27,7 +27,7 @@ class CFG:
     WANDB_PROJECT = 'NeuripsLLMEfficiency2'
     PRETRAINED_MODEL_NAME = "Qwen/Qwen-14B"
     DATASET_PATH = "Mithilss/cnn_dollybricks_platypus_bbq_2_0"
-    output_dir = "/home/mithil/PycharmProjects/NeuripsLLMEfficiency/models/Qwen/Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32"
+    output_dir = "Qwen-14B-1-cnn_dollybricks_platypus_bbq_rank_32"
     training_args = TrainingArguments(
         per_device_train_batch_size=1,
         num_train_epochs=1,
@@ -42,7 +42,6 @@ class CFG:
         learning_rate=1e-5,
         optim="adamw_torch",
         seed=42,
-        tf32=True,
         logging_steps=1,
         dataloader_num_workers=8,
         dataloader_pin_memory=True,
@@ -63,7 +62,11 @@ tokenizer = AutoTokenizer.from_pretrained(CFG.PRETRAINED_MODEL_NAME, trust_remot
 tokenizer.padding_side = "right"
 tokenizer.pad_token = "<|endoftext|>"
 nf4_config = BitsAndBytesConfig(
-    load_in_8bit=True,
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_use_double_quant=True
+    ,
+    bnb_4bit_compute_dtype=torch.float16
 )
 
 model = AutoModelForCausalLM.from_pretrained(CFG.PRETRAINED_MODEL_NAME, torch_dtype=torch.float16,
@@ -86,7 +89,7 @@ peft_config = LoraConfig(
     target_modules=modules
 )
 model = get_peft_model(model, peft_config)
-model.print_trainable_parameters()
+
 dataset = datasets.load_dataset(CFG.DATASET_PATH)['train']
 
 
@@ -132,8 +135,9 @@ trainer = Trainer(
     callbacks=[PeftSavingCallback()],
 )
 
-with autocast(dtype=torch.float16):
-    with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
-        trainer.train()
-trainer.save_model(CFG.output_dir)
-trainer.push_to_hub()
+if __name__ == '__main__':
+    with autocast(dtype=torch.float16):
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
+            trainer.train()
+    trainer.save_model(CFG.output_dir)
+    trainer.push_to_hub()

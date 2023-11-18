@@ -18,7 +18,7 @@ ENV HUGGINGFACE_TOKEN=xxxx
 RUN huggingface-cli login --token $HUGGINGFACE_TOKEN
 RUN pip install -r requirements.txt
 # Install other dependencies
-RUN pip install git+https://github.com/huggingface/accelerate.git transformers==4.34.0 bitsandbytes tiktoken einops transformers_stream_generator==0.0.4
+RUN pip install accelerate==0.24.0 transformers==4.34.0 bitsandbytes==0.41.0 tiktoken einops transformers_stream_generator==0.0.4
 # Run cache script and start FastAPI
 RUN ls
 CMD ["python3","train_4090_2.py"]
