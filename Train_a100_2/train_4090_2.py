@@ -91,7 +91,7 @@ peft_config = LoraConfig(
 )
 model = get_peft_model(model, peft_config)
 model.print_trainable_parameters()
-dataset = datasets.load_from_disk(CFG.DATASET_PATH)
+dataset = datasets.load_dataset(CFG.DATASET_PATH)
 
 
 # Tokenize the dataset
